@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
-import { RestaurantsController } from './restaurants.controller.js';
-import { OrdersController } from './orders.controller.js';
-import { AuthController } from './auth.controller.js';
- 
-@Module({ controllers: [RestaurantsController, OrdersController, AuthController] })
+import { CatalogModule } from './catalog/catalog.module.js';
+import { OrderingModule } from './ordering/ordering.module.js';
+import { AuthController } from './auth.controller.js'; 
+
+@Module({ 
+  imports: [CatalogModule, OrderingModule],
+  controllers: [AuthController] 
+})
 export class AppModule {}
