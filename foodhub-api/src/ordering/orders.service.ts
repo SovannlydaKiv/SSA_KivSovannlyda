@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { CatalogService } from '../catalog/catalog.service.js';
+import { EventsPublisher } from './events.publisher.js';
 import { ORDER_REPOSITORY } from './order.repository.js';
 import type { Order, OrderRepository } from './order.repository.js';
 
@@ -17,6 +18,7 @@ export class OrdersService {
   constructor(
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
     private readonly catalog: CatalogService,
+    private readonly events: EventsPublisher,
   ) {}
 
   async changeStatus(id: string, status: string): Promise<Order> {
@@ -52,12 +54,14 @@ export class OrdersService {
       items,
       status: 'PLACED',
     };
-    
+
     await this.orders.save(order);
 
     if (key) {
       this.idempotency.set(key, order.id);
     }
+
+    this.events.publish('OrderPlaced', { orderId: order.id, restaurantId, items });
 
     return order;
   }
